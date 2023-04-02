@@ -52,12 +52,12 @@ public class Main {
      * as a mathematical expression
      */
     private static HashMap<Integer, HashMap<Integer, String>> processPostfixExpression(Path csvPath) {
-        HashMap<Integer, HashMap<Integer, String>> csvList = parseCSVToHashMap(csvPath);
-        for (int row = 0; row < csvList.size(); row++) {
-            HashMap<Integer, String> currentRow = csvList.get(row);
+        HashMap<Integer, HashMap<Integer, String>> csvMap = parseCSVToHashMap(csvPath);
+        for (int row = 0; row < csvMap.size(); row++) {
+            HashMap<Integer, String> currentRow = csvMap.get(row);
             for (int col = 0; col < currentRow.size(); col++) {
                 String[] cell = getCell(currentRow.get(col));
-                double value = evaluateCell(cell, currentRow, col, csvList, new HashSet<>());
+                double value = evaluateCell(cell, currentRow, col, csvMap, new HashSet<>());
                 if (Double.isNaN(value)) {
                     setError(currentRow, col);
                 } else {
@@ -66,7 +66,7 @@ public class Main {
                 }
             }
         }
-        return csvList;
+        return csvMap;
     }
 
     /**
@@ -75,15 +75,15 @@ public class Main {
      * @param cell       the cell to evaluate, represented as an array of String tokens
      * @param currentRow the HashMap representing the current row of the cell being evaluated
      * @param col        the index of the current cell within its row
-     * @param csvList    the nested HashMap representing the contents of the CSV file
+     * @param csvMap    the nested HashMap representing the contents of the CSV file
      * @param uniqueSet  a Set containing all previously evaluated cell values
      * @return the numerical result of evaluating the cell, or NaN if there was an error
      */
-    private static double evaluateCell(String[] cell, HashMap<Integer, String> currentRow, int col, HashMap<Integer, HashMap<Integer, String>> csvList, Set<String> uniqueSet) {
+    private static double evaluateCell(String[] cell, HashMap<Integer, String> currentRow, int col, HashMap<Integer, HashMap<Integer, String>> csvMap, Set<String> uniqueSet) {
         Stack<Double> numberBuffer = new Stack<>();
         for (String character : cell) {
             if (!isOperator(character)) {
-                String stringValue = getValue(character, csvList, uniqueSet);
+                String stringValue = getValue(character, csvMap, uniqueSet);
                 if (stringValue.equals("#ERR")) {
                     setError(numberBuffer, currentRow, col);
                     break;
@@ -113,15 +113,15 @@ public class Main {
      * Gets the value of a cell in a CSV file, either by looking it up in the given HashMap or evaluating it as a mathematical expression.
      *
      * @param character the String representation of the cell value to get
-     * @param csvList   the nested HashMap representing the contents of the CSV file
+     * @param csvMap   the nested HashMap representing the contents of the CSV file
      * @param uniqueSet a Set containing all previously evaluated cell values
      * @return the String representation of the cell value
      */
-    private static String getValue(String character, HashMap<Integer, HashMap<Integer, String>> csvList, Set<String> uniqueSet) {
+    private static String getValue(String character, HashMap<Integer, HashMap<Integer, String>> csvMap, Set<String> uniqueSet) {
         if (isNotDouble(character)) {
             try {
 
-                HashMap<Integer, String> currentRow = getCurrentRow(character, csvList);
+                HashMap<Integer, String> currentRow = getCurrentRow(character, csvMap);
                 int colValue = getColumnValue(character);
                 String cellValue = currentRow.get(colValue);
 
@@ -129,7 +129,7 @@ public class Main {
 
                 if (isNotDouble(cellValue)) {
                     uniqueSet.add(cellValue);
-                    double newValue = evaluateCell(getCell(cellValue), currentRow, colValue, csvList, uniqueSet);
+                    double newValue = evaluateCell(getCell(cellValue), currentRow, colValue, csvMap, uniqueSet);
                     return String.valueOf(newValue);
                 } else {
                     return cellValue;
@@ -250,22 +250,22 @@ public class Main {
      * Gets the current row in the CSV file
      *
      * @param character The row character to be converted (1, 2, 3, etc.)
-     * @param csvList   the nested HashMap representing the contents of the CSV file
+     * @param csvMap   the nested HashMap representing the contents of the CSV file
      * @return A HashMap representing the current row in the CSV file
      */
-    private static HashMap<Integer, String> getCurrentRow(String character, HashMap<Integer, HashMap<Integer, String>> csvList) {
-        return csvList.get(Integer.parseInt(character.substring(1)) - 1);
+    private static HashMap<Integer, String> getCurrentRow(String character, HashMap<Integer, HashMap<Integer, String>> csvMap) {
+        return csvMap.get(Integer.parseInt(character.substring(1)) - 1);
     }
 
 
     /**
      * Prints the contents of a CSV file to the console.
      *
-     * @param csvList The list of rows in the CSV file
+     * @param csvMap The list of rows in the CSV file
      */
-    private static void printCSVContents(HashMap<Integer, HashMap<Integer, String>> csvList) {
-        for (int row = 0; row < csvList.size(); row++) {
-            HashMap<Integer, String> currentRow = csvList.get(row);
+    private static void printCSVContents(HashMap<Integer, HashMap<Integer, String>> csvMap) {
+        for (int row = 0; row < csvMap.size(); row++) {
+            HashMap<Integer, String> currentRow = csvMap.get(row);
             int commaCounter = currentRow.size();
             for (int col = 0; col < currentRow.size(); col++) {
                 System.out.print(formatString(currentRow.get(col)));
